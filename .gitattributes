@@ -1,5 +1,5 @@
 cmake/modules/* linguist-vendored=true
 doc/* linguist-vendored=true
+*.cpp linguist-language=C++
 *.h linguist-language=C
 *.c linguist-language=C
-*.cpp linguist-language=C++
