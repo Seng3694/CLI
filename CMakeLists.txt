@@ -3,5 +3,11 @@ cmake_minimum_required(VERSION 3.5)
 project (CLI)
 
 add_subdirectory(cli)
-add_subdirectory(tests)
-add_subdirectory(examples)
+
+if(CLI_BUILD_TESTS)
+	add_subdirectory(tests)
+endif()
+
+if(CLI_BUILD_EXAMPLES)
+	add_subdirectory(examples)
+endif()
