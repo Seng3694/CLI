@@ -16,6 +16,7 @@ TEST(cli, Parse_with_required);
 TEST(cli, Parse_with_command);
 TEST(cli, Parse_with_command_and_without_required);
 TEST(cli, Parse_with_everything);
+TEST(cli, Parse_positional_argument);
 TEST(cli, TryGetArgument_set);
 TEST(cli, TryGetArgument_not_set);
 TEST(cli, OptionSet_set);
@@ -35,6 +36,7 @@ TESTMAIN()
 	RUNTEST(cli, Parse_with_command);
 	RUNTEST(cli, Parse_with_command_and_without_required);
 	RUNTEST(cli, Parse_with_everything);
+	RUNTEST(cli, Parse_positional_argument);
 	RUNTEST(cli, TryGetArgument_set);
 	RUNTEST(cli, TryGetArgument_not_set);
 	RUNTEST(cli, OptionSet_set);
@@ -255,6 +257,31 @@ TEST(cli, Parse_with_everything)
 	cli_errors code = CLI_Parse(cli, (uint32)argc, argv);
 
 	assert(code == ERROR_NONE);
+
+	CLI_Destroy(cli);
+}
+
+TEST(cli, Parse_positional_argument)
+{
+	CLI* cli = CLI_Create(3);
+
+	CLI_AddArgument(cli, 'a', ARG_TYPE_COMMAND);
+	CLI_AddArgument(cli, 'b', ARG_TYPE_REQUIRED);
+
+	int argc = 2;
+	char* argv[] = {
+		"executable.exe",
+		"PathToSomeProjectFile.proj"
+	};
+
+	cli_errors code = CLI_Parse(cli, argc, argv);
+
+	assert(code == ERROR_NONE);
+
+	char* value = NULL;
+	assert(CLI_TryGetArgument(cli, 'a', &value));
+
+	assert(streq(value, "PathToSomeProjectFile.proj"));
 
 	CLI_Destroy(cli);
 }

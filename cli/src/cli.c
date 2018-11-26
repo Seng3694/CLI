@@ -4,7 +4,7 @@ CLI* CLI_Create(const uint32 commandCount)
 {
 	CLI* cli = malloc(sizeof(CLI));
 	cli->argumentCount = 0;
-	cli->arguments = calloc(commandCount, sizeof(Argument*));
+	cli->arguments = malloc(commandCount * sizeof(Argument*));
 	return cli;
 }
 
@@ -42,10 +42,12 @@ cli_errors CLI_Parse(CLI* self, int argc, char** argv)
 	uint32 currentLength;
 	Argument* currentArgument;
 	const uint32 argumentCount = self->argumentCount;
+	boolean argumentFound = CLI_FALSE;
 
 	//skip executable
 	for (i = 1; i < uargc; ++i)
 	{
+		argumentFound = CLI_FALSE;
 		current = argv[i];
 		currentLength = strlen(current);
 
@@ -54,7 +56,7 @@ cli_errors CLI_Parse(CLI* self, int argc, char** argv)
 			code |= ERROR_ARG_TOO_SHORT;
 			continue;
 		}
-		else
+		else if (current[0] == '-') //if it actually could be a command
 		{
 			for (j = 0; j < argumentCount; ++j)
 			{
@@ -65,6 +67,7 @@ cli_errors CLI_Parse(CLI* self, int argc, char** argv)
 					if (currentArgument->set)
 						continue;
 
+					argumentFound = CLI_TRUE;
 					currentArgument->set = CLI_TRUE;
 
 					//if there is any value
@@ -72,12 +75,24 @@ cli_errors CLI_Parse(CLI* self, int argc, char** argv)
 					{
 						//example:  "-dParameter" strlen will return 11. we want to skip the hyphen and command name so -2
 						//but we still need space for the \0 so we allocate "length" - 1
-						currentArgument->value = calloc(currentLength - 1, sizeof(char));
+						currentArgument->value = malloc((currentLength - 1) * sizeof(char));
 						//copy from source with offset 2 (skip hyphen and command name) and copy "length" - 1 which includes the \0
 						memcpy(currentArgument->value, current + 2, currentLength - 1);
 					}
 					break;
 				}
+			}
+		}
+		//if no argument is found, just set it as positional argument
+		if (argumentFound == CLI_FALSE)
+		{
+			currentArgument = self->arguments[i - 1];
+			if (!currentArgument->set)
+			{
+				currentArgument->set = CLI_TRUE;
+				//no offset in this one. so length + 1
+				currentArgument->value = malloc((currentLength + 1) * sizeof(char));
+				memcpy(currentArgument->value, current, currentLength + 1);
 			}
 		}
 	}
