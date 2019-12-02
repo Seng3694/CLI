@@ -131,7 +131,7 @@ boolean CLI_TryGetArgument(CLI* self, const char name, char** outArg)
 			if (!currentArgument->set)
 				return CLI_FALSE;
 
-			*outArg = currentArgument->value;
+			*outArg = strdup(currentArgument->value);
 
 			return CLI_TRUE;
 		}
